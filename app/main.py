@@ -9,7 +9,6 @@ from .database import engine,SessionLocal,get_db
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
-print("aaa")
 
 
 class Employee(BaseModel):
@@ -33,10 +32,7 @@ def get_posts():
     conn.commit()
     return {"data":posts}
     
-@app.get("/sqlalchemy")
-def test_posts(db: Session = Depends(get_db)):
-    employees= db.query(models.employees).all()
-    return {"data" : employees}
+
 
 @app.post("/")
 def create_employee(employee:Employee):
