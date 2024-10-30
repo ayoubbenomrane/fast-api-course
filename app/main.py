@@ -1,11 +1,16 @@
-from fastapi import FastAPI, HTTPException,status
+from fastapi import FastAPI, HTTPException,status,Depends
 from pydantic import BaseModel
 from fastapi.params import Body
 import psycopg2 ,time
 from psycopg2.extras import RealDictCursor
 from . import models
-from .database import engine
+from sqlalchemy.orm import Session
+from .database import engine,SessionLocal,get_db
+models.Base.metadata.create_all(bind=engine)
+
 app = FastAPI()
+print("aaa")
+
 
 class Employee(BaseModel):
     name: str
@@ -28,6 +33,10 @@ def get_posts():
     conn.commit()
     return {"data":posts}
     
+@app.get("/sqlalchemy")
+def test_posts(db: Session = Depends(get_db)):
+    employees= db.query(models.employees).all()
+    return {"data" : employees}
 
 @app.post("/")
 def create_employee(employee:Employee):
@@ -37,5 +46,4 @@ def create_employee(employee:Employee):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,)
     return "employee added succesully"
 
-    
     
