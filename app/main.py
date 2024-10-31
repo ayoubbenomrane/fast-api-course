@@ -54,6 +54,8 @@ def get_employee(id:int, db: Session = Depends(get_db)):
 @app.put("/employees/{id}")
 def update_employee(id:int,employee:Employee, db:Session=Depends(get_db)):
     employee_query=db.query(models.Employees).filter(models.Employees.id==id)
+    if employee_query.first()==None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail=f"post with id {id} doesn\'t exit")
     employee_query.update(employee.model_dump(),synchronize_session=False)
     
     db.commit()
