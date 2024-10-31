@@ -12,8 +12,8 @@ app = FastAPI()
 
 
 class Employee(BaseModel):
-    name: str
-    position: str
+    firstName: str
+    lastName: str
     salary: float
 
 try:
@@ -24,7 +24,17 @@ except Exception as error:
     print("Error: ", error)
 
 
-@app.get("/sqlalchemy")
+@app.get("/employees")
 def test_posts(db: Session = Depends(get_db)):
-    employees= db.query(models.employees).all()
+    employees= db.query(models.Employees).all()
     return {"data" : employees}
+
+@app.post("/employees")
+def create_employee(employee:Employee,db:Session=Depends(get_db)):
+    new_employee=models.Employees(
+         firstName=employee.firstName, lastName=employee.lastName, salary=employee.salary
+    )
+    db.add(new_employee)
+    db.commit()
+    db.refresh(new_employee)
+    return{"data": new_employee}
