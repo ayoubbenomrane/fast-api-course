@@ -16,25 +16,44 @@ class Employee(BaseModel):
     lastName: str
     salary: float
 
-try:
-    conn=psycopg2.connect(host='localhost' , database='fastapi',user='postgres', password='Ayoub2003', cursor_factory=RealDictCursor)
-    cursor=conn.cursor()
-    print('database conencted succesefully')
-except Exception as error:
-    print("Error: ", error)
+
 
 
 @app.get("/employees")
-def test_posts(db: Session = Depends(get_db)):
+def get_employee(db: Session = Depends(get_db)):
     employees= db.query(models.Employees).all()
     return {"data" : employees}
 
 @app.post("/employees")
 def create_employee(employee:Employee,db:Session=Depends(get_db)):
-    new_employee=models.Employees(
-         firstName=employee.firstName, lastName=employee.lastName, salary=employee.salary
-    )
+    test=employee.model_dump()
+    print(test)
+    new_employee=models.Employees(**employee.model_dump())
     db.add(new_employee)
     db.commit()
     db.refresh(new_employee)
     return{"data": new_employee}
+
+
+@app.get("/employees/{id}")
+def get_employee(id:int, db: Session = Depends(get_db)):
+    employee= db.query(models.Employees).filter(models.Employees.id==id).first()
+    if not employee:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail=f"post with id {id} doesn\'t exit")
+    return {"data" : employee}
+
+@app.delete("/employees/{id}")
+def get_employee(id:int, db: Session = Depends(get_db)):
+    employee= db.query(models.Employees).filter(models.Employees.id==id)
+    if employee.first()==None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail=f"post with id {id} doesn\'t exit")
+    employee.delete(synchronize_session=False)
+    db.commit()
+    return {"employee deleted":employee}
+
+@app.put("/employees/{id}")
+def update_employee(id:int,employee:Employee, db:Session=Depends(get_db)):
+    employee_query=db.query(models.Employees).filter(models.Employees.id==id)
+    employee_query.update(employee.model_dump(),synchronize_session=False)
+    
+    db.commit()
