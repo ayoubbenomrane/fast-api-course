@@ -10,8 +10,10 @@ class Employees(Base):
     salary=Column(Float, nullable=True)
 
 
-class user(Base):
+class User(Base):
     __tablename__="users"
-    email=Column(String, nullable=False,primary_key=True)
+    id = Column(Integer, primary_key=True, nullable=False)
+
+    email=Column(String, nullable=False)
     password=Column(String,nullable=False)
     created_at=Column(TIMESTAMP(timezone=True),server_default=text('now()'))
